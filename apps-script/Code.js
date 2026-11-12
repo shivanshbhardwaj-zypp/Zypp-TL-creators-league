@@ -451,7 +451,8 @@ var ZCL = (() => {
       var _a;
       return (_a = set.get(k.toLowerCase())) != null ? _a : null;
     };
-    const eligible = list(get("Eligible Platforms")).map((x) => x.toLowerCase());
+    const listed = list(get("Eligible Platforms")).map((x) => x.toLowerCase());
+    const eligible = listed.length ? listed : [...PLATFORMS];
     const settings = {
       campaignName: s(get("Campaign Name")) || "Zypp Creator League",
       campaignStatus: s(get("Campaign Status")) || "Active",

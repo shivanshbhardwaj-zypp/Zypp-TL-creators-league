@@ -58,7 +58,9 @@ export type Tables = { registrations: Rec[]; submissions: Rec[]; rewards: Rec[];
 export function fromTables(t: Tables): DB {
   const set = new Map(t.settings.map((r) => [s(r.Setting).toLowerCase(), r.Value]))
   const get = (k: string) => set.get(k.toLowerCase()) ?? null
-  const eligible = list(get('Eligible Platforms')).map((x) => x.toLowerCase())
+  // Blank setting = every platform on (Instagram, YouTube and Facebook are all on by default).
+  const listed = list(get('Eligible Platforms')).map((x) => x.toLowerCase())
+  const eligible = listed.length ? listed : [...PLATFORMS]
   const settings: Settings = {
     campaignName: s(get('Campaign Name')) || 'Zypp Creator League',
     campaignStatus: s(get('Campaign Status')) || 'Active',
