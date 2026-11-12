@@ -10,11 +10,22 @@ web app is the only server-side code (`apps-script/`). The frontend is a static 
 - Architecture, rules and security: [ANALYSIS.md](ANALYSIS.md)
 - Status: [TODO.md](TODO.md)
 
+## Run it
+
+**Real data (what you want):** the site needs the link to the Google Apps Script web app. It is not in this repository (`.env` is never committed).
+
 ```bash
 npm install
-npm run dev:mock   # preview with built-in demo data, no Google needed
-npm run dev        # against the real sheet (set VITE_GAS_URL in .env, see .env.example)
-npm test           # builds apps-script/Code.js and runs all tests
+cp .env.example .env    # then set VITE_GAS_URL to the Apps Script web app link
+npm run dev             # http://localhost:5180, live data from the Google Sheet
+```
+
+Without `VITE_GAS_URL` the site shows a "not connected" setup screen instead of data.
+
+**Design preview only:** `npm run dev:mock` runs the same logic over **made-up demo data** (30 fake TLs, 3 cities, random views from `server/seed.ts`). A red "DEMO DATA" bar is shown the whole time. Never use it to judge real numbers.
+
+```bash
+npm test           # builds apps-script/Code.js and runs all tests (they use the demo data)
 npm run build      # static site in dist/
 ```
 

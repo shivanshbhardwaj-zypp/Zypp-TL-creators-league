@@ -163,4 +163,30 @@ function App() {
   )
 }
 
-createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><App /></BrowserRouter></StrictMode>)
+const GAS_URL = import.meta.env.VITE_GAS_URL
+const DEMO = import.meta.env.MODE === 'mock'
+
+/** Shown instead of a broken page when a fresh copy isn't connected to the Google Sheet yet. */
+function NotConnected() {
+  return (
+    <div className="login">
+      <div className="card login-card">
+        <div className="brand"><span className="logo"><Zap size={16} /></span><div><strong>Zypp Creator League</strong><span className="muted sm">Setup needed</span></div></div>
+        <p><strong>This copy isn't connected to the Google Sheet yet.</strong></p>
+        <ol className="sm">
+          <li>Copy <code>.env.example</code> to <code>.env</code>.</li>
+          <li>Set <code>VITE_GAS_URL</code> to the Apps Script web app link (Apps Script → Deploy → Manage deployments).</li>
+          <li>Restart <code>npm run dev</code>.</li>
+        </ol>
+        <p className="muted sm">Full steps: GOOGLE_APPS_SCRIPT_SETUP.md. To only preview the design with made-up data, run <code>npm run dev:mock</code>.</p>
+      </div>
+    </div>
+  )
+}
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    {DEMO && <div className="demo-banner" role="status">DEMO DATA: made-up TLs, cities and views for previewing the design. Not connected to the real Google Sheet.</div>}
+    <BrowserRouter>{GAS_URL ? <App /> : <NotConnected />}</BrowserRouter>
+  </StrictMode>,
+)

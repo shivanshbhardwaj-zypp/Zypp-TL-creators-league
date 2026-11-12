@@ -489,3 +489,6 @@ tr.mine td:first-child { box-shadow: inset 3px 0 0 var(--green-d); }
 .vf { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 8px; }
 .vf li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; }
 .vf li.ok svg { color: var(--green-d); } .vf li.off svg { color: #B42318; }
+
+/* Demo mode warning */
+.demo-banner { position: sticky; top: 0; z-index: 60; background: #B42318; color: #fff; text-align: center; font-size: 13px; font-weight: 600; padding: 8px 12px; }
