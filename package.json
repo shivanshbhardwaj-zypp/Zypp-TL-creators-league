@@ -1,0 +1,31 @@
+{
+  "name": "zypp-creator-league",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5180",
+    "dev:mock": "vite --mode mock --port 5180",
+    "build": "vite build",
+    "build:gas": "node apps-script/build.mjs",
+    "test": "node apps-script/build.mjs && node --import tsx --test server/logic.test.ts server/integrations.test.ts apps-script/api.test.ts apps-script/bundle.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.0",
+    "recharts": "2.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "esbuild": "0.23.1",
+    "tsx": "4.19.2",
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  }
+}
