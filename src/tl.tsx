@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState, type FormEvent } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { ArrowDown, ArrowUp, Clapperboard, Clock, Eye, Medal, Plus, Target, Trophy } from 'lucide-react'
+import { ArrowDown, ArrowUp, Clapperboard, Clock, Eye, Lock, Medal, Plus, Target, Trophy } from 'lucide-react'
 import { COLORS, PLATFORM_LABEL, api, compact, date, num, shortWeek, useApi, useAuth } from './lib'
 import { Async, Badge, Card, DataTable, Empty, Kpi, LeaderTable, Podium, VideoLink, type BoardRow } from './ui'
 import { PageHead, tick, tip } from './admin'
@@ -358,5 +358,12 @@ function ClaimCell({ r, busy, onClaim }: { r: any; busy: boolean; onClaim: () =>
     </div>
   )
   if (c && c.status !== 'rejected') return <div className="claim-cell">{status}<span className="sm">{c.milestone} · claimed {date(c.claimedAt)}</span></div>
-  return <div className="claim-cell">{c?.status === 'rejected' && <>{status}<span className="muted sm">{c.reason}</span></>}<span className="muted sm">{r.reason}</span></div>
+  // Not eligible yet: the button is shown but locked; the server rejects early claims anyway.
+  return (
+    <div className="claim-cell">
+      <button className="btn sm" disabled title={r.reason}><Lock size={13} /> Claim</button>
+      <span className="muted sm">{r.reason}</span>
+      {c?.status === 'rejected' && <span className="muted sm">{status} {c.reason}</span>}
+    </div>
+  )
 }
