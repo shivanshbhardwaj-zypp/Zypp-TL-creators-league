@@ -123,7 +123,7 @@ test('admin verification: approval re-derives the milestone from verified views;
   assert.equal(claimCheck(db2, db2.submissions[0]).ok, true) // may claim again after fixing
 })
 
-test('T&C rule 2: one claim per TL per platform; disqualified videos cannot claim', () => {
+test('T&C 2: every video that reaches a milestone can be claimed, on any platform; disqualified videos cannot', () => {
   const db = seed()
   db.rewards = []
   const base = db.submissions[0]
@@ -133,14 +133,27 @@ test('T&C rule 2: one claim per TL per platform; disqualified videos cannot clai
     { ...base, id: 'c', platform: 'youtube', submittedAt: '2026-10-03', status: 'active', verifiedViews: 120000 },
     { ...base, id: 'd', platform: 'facebook', submittedAt: '2026-10-03', status: 'rejected', verifiedViews: 900000 },
   ]
-  claimReward(db, db.submissions[0], '2026-11-01')
-  assert.match(claimCheck(db, db.submissions[1]).reason!, /another instagram video/)
-  assert.equal(joinSub(db, db.submissions[1]).rewardEligible, false)
-  assert.equal(claimCheck(db, db.submissions[2]).ok, true) // other platforms are independent
+  for (const s of db.submissions.slice(0, 3)) claimReward(db, s, '2026-11-01')
+  assert.deepEqual(db.rewards.map((r) => [r.submissionId, r.amount]), [['a', 200], ['b', 1500], ['c', 500]])
   assert.match(claimCheck(db, db.submissions[3]).reason!, /disqualified/)
-  const r = db.rewards[0]
-  decideClaim(db, r, 'reject', null, 'Not a Zypp video', '2026-11-02')
-  assert.equal(claimCheck(db, db.submissions[1]).ok, true) // a rejected claim frees the platform
+})
+
+test('T&C 5: monthly cap per participant; approval pays at most what is left this month', () => {
+  const db = seed()
+  db.rewards = []
+  db.settings.monthlyCap = 15000
+  db.milestones.push({ id: 'M10000000', views: 10000000, amount: 15000, label: '10M views', active: true })
+  const base = db.submissions[0]
+  db.submissions = [1, 2, 3].map((i) => ({ ...base, id: `v${i}`, status: 'active' as const, verifiedViews: 12000000 }))
+  const rs = db.submissions.map((s) => claimReward(db, s, '2026-11-01'))
+  decideClaim(db, rs[0], 'approve', 12000000, undefined, '2026-11-02')
+  assert.equal(rs[0].amount, 15000)
+  assert.throws(() => decideClaim(db, rs[1], 'approve', 12000000, undefined, '2026-11-03'), /monthly reward cap/)
+  decideClaim(db, rs[1], 'approve', 12000000, undefined, '2026-12-01') // new month, cap resets
+  assert.equal(rs[1].amount, 15000)
+  db.settings.monthlyCap = 16000
+  decideClaim(db, rs[2], 'approve', 12000000, undefined, '2026-12-05') // earns Rs 15,000 but only Rs 1,000 is left in December
+  assert.equal(rs[2].amount, 1000)
 })
 
 test('videoKey ignores share params, www/m and trailing slashes but keeps the YouTube id', () => {

@@ -16,20 +16,21 @@ const STEPS: [string, string, ReactNode][] = [
   ['Get rewarded', 'Achieve the specified view milestones and earn the corresponding cash rewards.', <Trophy size={18} />],
 ]
 
-const FAQS = (ms: Milestone[]) => [
-  ['Who can participate in this campaign?', 'Zypp Team Leaders can participate in the campaign by creating and submitting engaging videos around Zypp and the gig economy.'],
+const FAQS = (ms: Milestone[], cap: number | null) => [
+  ['Who can participate in this campaign?', 'Zypp team members can participate in the campaign by creating and submitting engaging videos around Zypp and the gig economy.'],
   ['Which platforms are eligible?', 'Videos uploaded on Instagram, YouTube and Facebook will be considered.'],
   ['Can I submit multiple videos?', 'Yes! You can create, upload and submit multiple videos simultaneously across the eligible platforms and can submit one video across multiple platforms.'],
-  ['Will all my submitted videos be eligible for rewards?', 'No. Only one video per platform will be considered for rewards. The first video on each platform to achieve any one of the specified milestones will be eligible.'],
+  ['Will all my submitted videos be eligible for rewards?', `Yes. Every video that reaches a milestone is eligible for a reward${cap ? `, up to ${inr(cap)} per participant per month` : ''}.`],
   ['How will my video be reviewed?', 'Each submitted video will be reviewed within 7 days of submission to verify its eligibility and performance against the campaign milestones.'],
   ['Can I earn rewards for achieving multiple milestones with the same video?', 'No. Rewards will be calculated based on the highest milestone achieved by your eligible video and will not be cumulative.'],
-  ['Can I earn rewards on multiple platforms?', 'Yes. The one-video-per-platform rule applies independently to Instagram, YouTube and Facebook.'],
-  ['How much can I earn?', ms.length ? `You can earn rewards ranging from ${inr(ms[0].amount)} to ${inr(ms[ms.length - 1].amount)} depending on the highest view milestone achieved by your eligible video.` : 'Rewards depend on the highest view milestone achieved by your eligible video.'],
+  ['Can I earn rewards on multiple platforms?', 'Yes. Every eligible video on Instagram, YouTube and Facebook can earn a reward.'],
+  ['When will I get paid?', 'Rewards are calculated every 7 days. Claim your eligible rewards from your dashboard; they are credited by the end of the second week.'],
+  ['How much can I earn?', ms.length ? `You can earn rewards ranging from ${inr(ms[0].amount)} to ${inr(ms[ms.length - 1].amount)} per video, depending on the highest view milestone it achieves${cap ? `, up to ${inr(cap)} per month` : ''}.` : 'Rewards depend on the highest view milestone achieved by your eligible video.'],
 ]
 
 
-const Head = ({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) => (
-  <div className="lx-head"><span className="lx-eyebrow">{eyebrow}</span><h2>{title}</h2>{children && <p>{children}</p>}</div>
+const Head = ({ eyebrow, title, children }: { eyebrow?: string; title: string; children?: ReactNode }) => (
+  <div className="lx-head">{eyebrow && <span className="lx-eyebrow">{eyebrow}</span>}<h2>{title}</h2>{children && <p>{children}</p>}</div>
 )
 
 // ---------- Custom graphics (inline SVG, brand greens) ----------
@@ -73,15 +74,20 @@ const Orbit = () => (
 )
 
 // ---------- Content blocks ----------
-function Terms({ ms }: { ms: Milestone[] }) {
-  const slabs = ms.map((m) => `${num(m.views)}+ views – ${inr(m.amount)}`).join('; ')
+const shortViews = (v: number) => (v >= 1e6 ? `${v / 1e6}M` : v >= 1e3 ? `${v / 1e3}K` : String(v))
+
+/** Terms & Conditions. Milestones and the monthly cap come from CAMPAIGN_SETTINGS, so the page always matches what is paid. */
+function Terms({ ms, cap }: { ms: Milestone[]; cap: number | null }) {
   return (
     <ol className="lx-terms">
-      <li><strong>Video Review:</strong> Each submitted video will be reviewed within 7 days of submission to verify its eligibility and performance against the campaign milestones, which includes {slabs}.</li>
-      <li><strong>One Video per Platform:</strong> Only one video per platform (Instagram, YouTube and Facebook) will be considered for rewards. The first video on each platform to achieve any one of the specified milestones will be eligible for the corresponding reward. Subsequent videos on the same platform will not be considered for rewards.</li>
-      <li><strong>Multiple Video Submissions:</strong> Team Leaders are free to upload and submit multiple videos simultaneously across the eligible platforms. However, reward eligibility will remain subject to the one-video-per-platform rule mentioned above.</li>
-      <li><strong>Reward Calculation:</strong> Rewards will be calculated based on the highest milestone achieved by the eligible video and will not be cumulative across multiple milestone slabs.</li>
-      <li><strong>Reward Eligibility:</strong> All rewards are subject to verification of the submitted video and its achieved view count by the Zypp campaign team.</li>
+      <li><strong>Video Review:</strong> Each submitted video will be reviewed within 7 days against the following milestones:
+        <ul>{ms.map((m) => <li key={m.views}>{shortViews(m.views)} views – {inr(m.amount)}</li>)}</ul>
+      </li>
+      <li><strong>Multiple Video Eligibility:</strong> Participants can submit multiple videos across Instagram, YouTube and Facebook. Every video achieving a milestone will be eligible for a reward.</li>
+      <li><strong>Reward Calculation:</strong> Rewards will be based on the highest milestone achieved by each video and will not be cumulative.</li>
+      <li><strong>Weekly Payout:</strong> Rewards will be calculated after every 7 days. Participants can claim their eligible rewards, which will be credited by the end of the second week.</li>
+      {cap ? <li><strong>Monthly Reward Cap:</strong> Maximum reward payable is {inr(cap)} per participant per month, irrespective of the number of videos or views achieved.</li> : null}
+      <li><strong>Verification:</strong> All rewards are subject to verification and approval by the Zypp campaign team.</li>
     </ol>
   )
 }
@@ -93,7 +99,7 @@ function Hero({ m, ms }: { m: any; ms: Milestone[] }) {
       <Orbit />
       <div className="lx-hero-copy">
         <span className={`lx-chip ${m.open ? 'open' : ''}`}>{m.open ? '● Submissions open' : 'Submissions closed'}</span>
-        <h1>Creators League<br /><span>Team Leader Edition</span></h1>
+        <h1>Zypp<br /><span>Creators League</span></h1>
         <p className="lx-tag">Create, Influence, Earn</p>
         {(m.campaignStart || m.campaignEnd) && <p className="lx-dates">{date(m.campaignStart)} – {date(m.campaignEnd)}</p>}
         <div className="lx-stats" aria-hidden="true">
@@ -105,11 +111,11 @@ function Hero({ m, ms }: { m: any; ms: Milestone[] }) {
           <span className="lx-eyebrow light">About the campaign</span>
           <h2>Create. Influence. Go Viral. Get Rewarded.</h2>
           <p className="lx-strong">Your creativity. Your content. Your rewards!</p>
-          <p>Are you a Zypp Team Leader with a creative spark? Here's your chance to turn your ideas into engaging videos, inspire people and put the spotlight on India's growing gig economy.</p>
+          <p>Are you part of the Zypp team and have a creative spark? Here's your chance to turn your ideas into engaging videos, inspire people and put the spotlight on India's growing gig economy.</p>
           <p>Create exciting content around Zypp, its riders and the world of gig work. Share your videos on Instagram, YouTube or Facebook, reach exciting view milestones and win cash rewards for your content performance.</p>
         </div>
       </div>
-      <div className="lx-box lx-formbox"><h3>TL Registration</h3><p className="muted sm">Submit your video link for review</p><EntryForm meta={m} /></div>
+      <div className="lx-box lx-formbox"><h3>Registration</h3><p className="muted sm">Submit your video link for review</p><EntryForm meta={m} /></div>
     </section>
   )
 }
@@ -120,7 +126,7 @@ export function Landing() {
   return (
     <div className="lx">
       <header className="lx-top">
-        <div className="brand"><span className="logo"><Zap size={16} /></span><div><strong>Zypp Creator League</strong><span className="muted sm">Zypp Electric</span></div></div>
+        <div className="brand"><span className="logo"><Zap size={16} /></span><div><strong>Zypp Creators League</strong><span className="muted sm">Zypp Electric</span></div></div>
         <Link to="/login" className="btn sm"><LayoutDashboard size={14} /> My dashboard</Link>
       </header>
       <Async q={meta}>{(m) => {
@@ -167,13 +173,13 @@ export function Landing() {
             <section className="lx-sec">
               <Head eyebrow="Platforms" title="Three Platforms. More Opportunities.">Showcase your creativity wherever your audience is!</Head>
               <div className="lx-plats">{['Instagram', 'YouTube', 'Facebook'].map((p) => <span key={p} className={`lx-plat ${p.toLowerCase()}`}>{p}</span>)}</div>
-              <p className="lx-center muted">You can upload and submit multiple videos simultaneously across all three platforms. However, only the first eligible video to achieve a specified milestone on each platform will qualify for rewards.</p>
+              <p className="lx-center muted">You can upload and submit multiple videos simultaneously across all three platforms. Every video that reaches a milestone qualifies for a reward.</p>
             </section>
 
             <section className="lx-sec">
               <Head eyebrow="FAQ" title="Frequently Asked Questions" />
               <div className="lx-faq">
-                {FAQS(ms).map(([q, a], i) => (
+                {FAQS(ms, m.monthlyCap ?? null).map(([q, a], i) => (
                   <div key={q} className={`lx-q ${openFaq === i ? 'open' : ''}`}>
                     <button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} aria-expanded={openFaq === i}><span>{String(i + 1).padStart(2, '0')}</span>{q}<b>+</b></button>
                     {openFaq === i && <p>{a}</p>}
@@ -183,8 +189,8 @@ export function Landing() {
             </section>
 
             <section className="lx-sec" id="terms">
-              <Head eyebrow={m.termsVersion ? `Version ${m.termsVersion}` : 'Terms'} title="Terms & Conditions" />
-              <div className="lx-box"><Terms ms={ms} /></div>
+              <Head title="Terms & Conditions" />
+              <div className="lx-box"><Terms ms={ms} cap={m.monthlyCap ?? null} /></div>
             </section>
           </main>
         )

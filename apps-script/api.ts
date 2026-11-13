@@ -135,10 +135,10 @@ const ROUTES: Route[] = [
   {
     method: 'GET', re: /^\/public\/meta$/, role: 'public', fn: ({ env }) => {
       const db = env.load()
-      const { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion } = db.settings
+      const { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion, monthlyCap } = db.settings
       // Milestones are public campaign terms (shown on the landing page); TL dashboards still never get amounts.
       const milestones = db.milestones.filter((m) => m.active).map((m) => ({ views: m.views, amount: m.amount }))
-      return { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion, platforms: enabledPlatforms(db), open: isOpen(db, env.today()), milestones }
+      return { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion, platforms: enabledPlatforms(db), open: isOpen(db, env.today()), milestones, monthlyCap }
     },
   },
   {

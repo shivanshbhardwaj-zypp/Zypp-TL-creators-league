@@ -488,3 +488,24 @@ tr.mine td:first-child { box-shadow: inset 3px 0 0 var(--green-d); }
 .vf li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; }
 .vf li.ok svg { color: var(--green-d); } .vf li.off svg { color: #B42318; }
 
+
+/* Steps in one row of compact cards; reward ladder grows with the number of milestones */
+.lx-bento { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.lx-step { min-height: 0; padding: 16px; gap: 6px; border-radius: 16px; }
+.lx-step h3 { font-size: 16px; }
+.lx-step p { font-size: 13px; line-height: 1.5; }
+.lx-step .lx-ic.big { width: 34px; height: 34px; border-radius: 10px; }
+.lx-ladder { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+@media (max-width: 900px) { .lx-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lx-ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .lx-bento { grid-template-columns: minmax(0, 1fr); } }
+
+/* Reward tiles: always one straight row on desktop, however many milestones exist */
+@media (min-width: 901px) {
+  .lx-ladder { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; }
+  .lx-rung { padding: 16px 8px; }
+  .lx-rung strong { font-size: 17px; }
+  .lx-rung em { font-size: 16px; padding: 4px 12px; }
+  .lx-bar { width: 38px; height: 96px; }
+}
+
+.lx-terms ul { margin: 6px 0 2px; padding-left: 18px; display: grid; gap: 2px; }

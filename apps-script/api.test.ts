@@ -59,7 +59,7 @@ test('landing form respects campaign status and per-ID rate limit', () => {
   assert.equal(call('/public/register', 'POST', { ...FORM, url: 'https://instagram.com/reel/R99' }).status, 429)
   const meta = call('/public/meta')
   assert.equal(meta.status, 200)
-  assert.deepEqual(Object.keys(meta.data).sort(), ['campaignEnd', 'campaignName', 'campaignStart', 'campaignStatus', 'cities', 'milestones', 'open', 'platforms', 'termsVersion'])
+  assert.deepEqual(Object.keys(meta.data).sort(), ['campaignEnd', 'campaignName', 'campaignStart', 'campaignStatus', 'cities', 'milestones', 'monthlyCap', 'open', 'platforms', 'termsVersion'])
 })
 
 test('TL login is Employee ID + registered email; TL sees only public leaderboard data and no admin data', () => {

@@ -28,7 +28,8 @@ export const DEFAULT_SETTINGS: [string, string][] = [
   ['End Date', ''],
   ['Eligible Platforms', 'Instagram, YouTube, Facebook'],
   ['Available Cities', 'Delhi NCR, Mumbai, Pune, Bengaluru, Hyderabad, Rohtak, Jaipur'],
-  ['Reward Milestones', '25000=200; 100000=500; 500000=1500; 1000000=3000'],
+  ['Reward Milestones', '25000=200; 100000=500; 500000=1500; 1000000=3000; 10000000=15000'],
+  ['Monthly Reward Cap', '15000'],
   ['Terms and Conditions Version', 'v1'],
 ]
 
@@ -69,6 +70,8 @@ export function fromTables(t: Tables): DB {
     platforms: Object.fromEntries(PLATFORMS.map((p) => [p, eligible.includes(p)])) as Record<Platform, boolean>,
     cities: list(get('Available Cities')),
     termsVersion: s(get('Terms and Conditions Version')),
+    // Missing row = the T&C default of ₹15,000; 0 = no cap.
+    monthlyCap: get('Monthly Reward Cap') == null ? 15000 : n(get('Monthly Reward Cap')) || null,
   }
   const participants: Participant[] = t.registrations.filter((r) => s(r['Participant ID'])).map((r) => ({
     id: s(r['Participant ID']),
@@ -144,7 +147,7 @@ export function toTables(db: DB) {
     settings: ([
       ['Campaign Name', st.campaignName], ['Campaign Status', st.campaignStatus], ['Start Date', st.campaignStart], ['End Date', st.campaignEnd],
       ['Eligible Platforms', PLATFORMS.filter((p) => st.platforms[p]).map((p) => LABEL[p]).join(', ')], ['Available Cities', st.cities.join(', ')],
-      ['Reward Milestones', formatMilestones(db.milestones)], ['Terms and Conditions Version', st.termsVersion],
+      ['Reward Milestones', formatMilestones(db.milestones)], ['Monthly Reward Cap', st.monthlyCap == null ? '0' : String(st.monthlyCap)], ['Terms and Conditions Version', st.termsVersion],
     ] as [string, string][]).map(([k, v]): Rec => ({ Setting: k, Value: v })),
     leaderboard: leaderboard(db).map((r): Rec => {
       const t = totals(db.submissions.filter((x) => x.participantId === r.participantId))

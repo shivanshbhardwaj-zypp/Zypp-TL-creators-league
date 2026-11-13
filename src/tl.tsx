@@ -324,7 +324,7 @@ export function MyClaims() {
   }
   return (
     <>
-      <PageHead title="Claim rewards" sub="Claim when a video reaches a view milestone. Only one video per platform can earn a reward, and the highest milestone it reaches counts." />
+      <PageHead title="Claim rewards" sub="Claim when a video reaches a view milestone. Every video can earn a reward at the highest milestone it reaches; rewards are calculated weekly and subject to the monthly cap." />
       {msg.ok && <p className="green">{msg.ok}</p>}
       {msg.err && <p className="err-text">{msg.err}</p>}
       <Async q={q}>{(rows) => (

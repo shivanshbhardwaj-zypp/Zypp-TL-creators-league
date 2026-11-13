@@ -63,8 +63,8 @@ test('setup() creates the six sheets with the exact headers and default settings
   assert.deepEqual(sheets.get('TL_REGISTRATIONS')!.g[0], ['Participant ID', 'Name', 'Employee ID', 'Email ID', 'City', 'Registration Date', 'Participant Status'])
   assert.deepEqual(sheets.get('REWARDS')!.g[0], ['Reward ID', 'Participant ID', 'TL Name', 'Platform', 'Submission ID', 'Highest Milestone', 'Reward Amount', 'Reward Status', 'Reward Date', 'Claimed Views', 'Claim Date', 'Verified Views', 'Rejection Reason'])
   const settings = sheets.get('CAMPAIGN_SETTINGS')!.g
-  assert.equal(settings.length, 9)
-  assert.deepEqual(settings.find((r) => r[0] === 'Reward Milestones'), ['Reward Milestones', '25000=200; 100000=500; 500000=1500; 1000000=3000'])
+  assert.equal(settings.length, 10)
+  assert.deepEqual(settings.find((r) => r[0] === 'Reward Milestones'), ['Reward Milestones', '25000=200; 100000=500; 500000=1500; 1000000=3000; 10000000=15000'])
   assert.deepEqual(post('/public/meta').data.cities, ['Delhi NCR', 'Bengaluru'])
   assert.deepEqual(JSON.parse(load().ctx.doGet().body).data.ok, true)
 })

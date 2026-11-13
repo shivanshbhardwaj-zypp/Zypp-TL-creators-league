@@ -130,8 +130,6 @@ var ZCL = (() => {
     const m = milestoneFor(db, views);
     const first2 = activeMilestones(db)[0];
     if (!m) return { ok: false, views, reason: first2 ? `Reach ${first2.views.toLocaleString("en-IN")} views to claim (now ${views.toLocaleString("en-IN")}).` : "No reward milestones are active." };
-    const other = db.rewards.find((r) => r.participantId === s2.participantId && r.platform === s2.platform && r.submissionId !== s2.id && r.status !== "rejected");
-    if (other) return { ok: false, views, milestone: m, reason: `You already claimed for another ${s2.platform} video (${other.submissionId}). Only one video per platform can earn a reward.` };
     const mine = db.rewards.find((r) => r.submissionId === s2.id && r.status !== "rejected");
     if ((mine == null ? void 0 : mine.status) === "paid") return { ok: false, views, milestone: m, reason: "The reward for this video has been paid." };
     if (mine && m.amount <= mine.amount) return { ok: false, views, milestone: m, reason: `Already claimed at the ${mine.milestone} milestone.` };
@@ -147,6 +145,12 @@ var ZCL = (() => {
     db.rewards.push(r);
     return r;
   }
+  function earnedInMonth(db, pid, month, except) {
+    return sum(db.rewards.filter((x) => {
+      var _a, _b;
+      return x !== except && x.participantId === pid && earned(x) && ((_b = (_a = x.decidedAt) != null ? _a : x.paidAt) != null ? _b : x.claimedAt).slice(0, 7) === month;
+    }), (x) => x.amount);
+  }
   function decideClaim(db, r, action, verifiedViews, reason, at) {
     if (r.status !== "claimed") throw new Error("Only claims waiting for verification can be approved or rejected");
     if (action === "reject") {
@@ -159,23 +163,30 @@ var ZCL = (() => {
     if (!m) throw new Error("Verified views are below the lowest milestone. Reject the claim instead.");
     const s2 = db.submissions.find((x) => x.id === r.submissionId);
     if (!s2 || s2.status !== "active") throw new Error("The video is disqualified or missing. Reject the claim instead.");
+    let amount = m.amount;
+    const cap2 = db.settings.monthlyCap;
+    if (cap2) {
+      const left = cap2 - earnedInMonth(db, r.participantId, at.slice(0, 7), r);
+      if (left <= 0) throw new Error(`This participant already reached the monthly reward cap of ₹${cap2.toLocaleString("en-IN")}. Reject the claim or approve it next month.`);
+      amount = Math.min(amount, left);
+    }
     s2.verifiedViews = verifiedViews;
-    return Object.assign(r, { status: "approved", verifiedViews, milestone: m.label, amount: m.amount, decidedAt: at, reason: void 0 });
+    return Object.assign(r, { status: "approved", verifiedViews, milestone: m.label, amount, decidedAt: at, reason: void 0 });
   }
   function claimChecks(db, r) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     const s2 = db.submissions.find((x) => x.id === r.submissionId);
     const viewsNow = s2 ? counted(s2) : 0;
     const threshold = (_b = (_a = db.milestones.find((m) => m.label === r.milestone)) == null ? void 0 : _a.views) != null ? _b : 0;
-    const earlier = s2 ? db.submissions.filter((x) => x.participantId === s2.participantId && x.platform === s2.platform && x.id !== s2.id && x.submittedAt < s2.submittedAt && milestoneFor(db, counted(x))).map((x) => x.id) : [];
+    const cap2 = db.settings.monthlyCap;
     return {
       viewsNow,
       meetsMilestone: viewsNow >= threshold,
       active: (s2 == null ? void 0 : s2.status) === "active",
       liveViews: (_c = s2 == null ? void 0 : s2.fetchedViews) != null ? _c : null,
       liveAt: (_d = s2 == null ? void 0 : s2.fetchedAt) != null ? _d : null,
-      earlierEligibleVideos: earlier
-      // T&C: the FIRST video on a platform to reach a milestone is the eligible one
+      capLeft: cap2 ? cap2 - earnedInMonth(db, r.participantId, ((_e = r.decidedAt) != null ? _e : r.claimedAt).slice(0, 7), r) : null
+      // T&C 5
     };
   }
   var DAY = 864e5;
@@ -425,7 +436,8 @@ var ZCL = (() => {
     ["End Date", ""],
     ["Eligible Platforms", "Instagram, YouTube, Facebook"],
     ["Available Cities", "Delhi NCR, Mumbai, Pune, Bengaluru, Hyderabad, Rohtak, Jaipur"],
-    ["Reward Milestones", "25000=200; 100000=500; 500000=1500; 1000000=3000"],
+    ["Reward Milestones", "25000=200; 100000=500; 500000=1500; 1000000=3000; 10000000=15000"],
+    ["Monthly Reward Cap", "15000"],
     ["Terms and Conditions Version", "v1"]
   ];
   var LABEL = { instagram: "Instagram", youtube: "YouTube", facebook: "Facebook" };
@@ -460,7 +472,9 @@ var ZCL = (() => {
       campaignEnd: s(get("End Date")),
       platforms: Object.fromEntries(PLATFORMS.map((p) => [p, eligible.includes(p)])),
       cities: list(get("Available Cities")),
-      termsVersion: s(get("Terms and Conditions Version"))
+      termsVersion: s(get("Terms and Conditions Version")),
+      // Missing row = the T&C default of ₹15,000; 0 = no cap.
+      monthlyCap: get("Monthly Reward Cap") == null ? 15e3 : n(get("Monthly Reward Cap")) || null
     };
     const participants = t.registrations.filter((r) => s(r["Participant ID"])).map((r) => ({
       id: s(r["Participant ID"]),
@@ -572,6 +586,7 @@ var ZCL = (() => {
         ["Eligible Platforms", PLATFORMS.filter((p) => st.platforms[p]).map((p) => LABEL[p]).join(", ")],
         ["Available Cities", st.cities.join(", ")],
         ["Reward Milestones", formatMilestones(db.milestones)],
+        ["Monthly Reward Cap", st.monthlyCap == null ? "0" : String(st.monthlyCap)],
         ["Terms and Conditions Version", st.termsVersion]
       ].map(([k, v]) => ({ Setting: k, Value: v })),
       leaderboard: leaderboard(db).map((r) => {
@@ -711,9 +726,9 @@ var ZCL = (() => {
       role: "public",
       fn: ({ env: env2 }) => {
         const db = env2.load();
-        const { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion } = db.settings;
+        const { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion, monthlyCap } = db.settings;
         const milestones = db.milestones.filter((m) => m.active).map((m) => ({ views: m.views, amount: m.amount }));
-        return { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion, platforms: enabledPlatforms(db), open: isOpen(db, env2.today()), milestones };
+        return { campaignName, campaignStatus, campaignStart, campaignEnd, cities, termsVersion, platforms: enabledPlatforms(db), open: isOpen(db, env2.today()), milestones, monthlyCap };
       }
     },
     {

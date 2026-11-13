@@ -119,8 +119,6 @@ export function claimCheck(db: DB, s: Submission): { ok: boolean; reason?: strin
   const m = milestoneFor(db, views)
   const first = activeMilestones(db)[0]
   if (!m) return { ok: false, views, reason: first ? `Reach ${first.views.toLocaleString('en-IN')} views to claim (now ${views.toLocaleString('en-IN')}).` : 'No reward milestones are active.' }
-  const other = db.rewards.find((r) => r.participantId === s.participantId && r.platform === s.platform && r.submissionId !== s.id && r.status !== 'rejected')
-  if (other) return { ok: false, views, milestone: m, reason: `You already claimed for another ${s.platform} video (${other.submissionId}). Only one video per platform can earn a reward.` }
   const mine = db.rewards.find((r) => r.submissionId === s.id && r.status !== 'rejected')
   if (mine?.status === 'paid') return { ok: false, views, milestone: m, reason: 'The reward for this video has been paid.' }
   if (mine && m.amount <= mine.amount) return { ok: false, views, milestone: m, reason: `Already claimed at the ${mine.milestone} milestone.` }
@@ -139,7 +137,13 @@ export function claimReward(db: DB, s: Submission, at: string): RewardAllocation
   return r
 }
 
-/** Admin verdict. Approval re-derives the milestone from the views the admin verified, so a claim can never pay more than the video earned. */
+/** Rewards already approved/paid for a participant in a calendar month (YYYY-MM), for the monthly cap (T&C 5). */
+export function earnedInMonth(db: DB, pid: string, month: string, except?: RewardAllocation) {
+  return sum(db.rewards.filter((x) => x !== except && x.participantId === pid && earned(x) && (x.decidedAt ?? x.paidAt ?? x.claimedAt).slice(0, 7) === month), (x) => x.amount)
+}
+
+/** Admin verdict. Approval re-derives the milestone from the views the admin verified, so a claim can never pay more than the video earned,
+ *  and never more than what is left of the participant's monthly cap. */
 export function decideClaim(db: DB, r: RewardAllocation, action: string, verifiedViews: unknown, reason: string | undefined, at: string) {
   if (r.status !== 'claimed') throw new Error('Only claims waiting for verification can be approved or rejected')
   if (action === 'reject') {
@@ -152,8 +156,15 @@ export function decideClaim(db: DB, r: RewardAllocation, action: string, verifie
   if (!m) throw new Error('Verified views are below the lowest milestone. Reject the claim instead.')
   const s = db.submissions.find((x) => x.id === r.submissionId)
   if (!s || s.status !== 'active') throw new Error('The video is disqualified or missing. Reject the claim instead.')
+  let amount = m.amount
+  const cap = db.settings.monthlyCap
+  if (cap) {
+    const left = cap - earnedInMonth(db, r.participantId, at.slice(0, 7), r)
+    if (left <= 0) throw new Error(`This participant already reached the monthly reward cap of ₹${cap.toLocaleString('en-IN')}. Reject the claim or approve it next month.`)
+    amount = Math.min(amount, left)
+  }
   s.verifiedViews = verifiedViews as number // the admin's check is also the video's latest measured count
-  return Object.assign(r, { status: 'approved' as const, verifiedViews: verifiedViews as number, milestone: m.label, amount: m.amount, decidedAt: at, reason: undefined })
+  return Object.assign(r, { status: 'approved' as const, verifiedViews: verifiedViews as number, milestone: m.label, amount, decidedAt: at, reason: undefined })
 }
 
 /** What an admin sees next to each claim. */
@@ -161,14 +172,14 @@ export function claimChecks(db: DB, r: RewardAllocation) {
   const s = db.submissions.find((x) => x.id === r.submissionId)
   const viewsNow = s ? counted(s) : 0
   const threshold = db.milestones.find((m) => m.label === r.milestone)?.views ?? 0
-  const earlier = s ? db.submissions.filter((x) => x.participantId === s.participantId && x.platform === s.platform && x.id !== s.id && x.submittedAt < s.submittedAt && milestoneFor(db, counted(x))).map((x) => x.id) : []
+  const cap = db.settings.monthlyCap
   return {
     viewsNow,
     meetsMilestone: viewsNow >= threshold,
     active: s?.status === 'active',
     liveViews: s?.fetchedViews ?? null,
     liveAt: s?.fetchedAt ?? null,
-    earlierEligibleVideos: earlier, // T&C: the FIRST video on a platform to reach a milestone is the eligible one
+    capLeft: cap ? cap - earnedInMonth(db, r.participantId, (r.decidedAt ?? r.claimedAt).slice(0, 7), r) : null, // T&C 5
   }
 }
 

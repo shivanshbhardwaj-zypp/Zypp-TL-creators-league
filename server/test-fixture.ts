@@ -88,6 +88,7 @@ export function seed(): DB {
       campaignName: 'Zypp Creator League — TL Season 1',
       campaignStatus: 'Active',
       termsVersion: 'v1',
+      monthlyCap: 15000,
       platforms: { instagram: true, youtube: true, facebook: true },
       cities: ['Delhi NCR', 'Bengaluru', 'Hyderabad'],
       campaignStart: iso(start),

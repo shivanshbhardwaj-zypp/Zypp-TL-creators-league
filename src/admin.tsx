@@ -408,7 +408,7 @@ export function Rewards() {
                 ]}
               />
             </Card>
-            <Card title="Reward milestones" sub="Saved to CAMPAIGN_SETTINGS. Highest milestone reached counts; one video per platform per TL.">
+            <Card title="Reward milestones" sub="Saved to CAMPAIGN_SETTINGS. Highest milestone per video counts. Monthly cap per participant: CAMPAIGN_SETTINGS › Monthly Reward Cap.">
               <MilestoneEditor milestones={d.milestones} onChange={q.reload} />
             </Card>
             {open && <VerifyDrawer r={open} onClose={() => setOpen(null)} onSaved={() => { setOpen(null); q.reload() }} />}
@@ -425,7 +425,7 @@ function Checks({ c, milestone }: { c: any; milestone: string }) {
     <div className="chks">
       <Check ok={c.active}>{c.active ? 'Video active' : 'Video disqualified'}</Check>
       <Check ok={c.meetsMilestone}>Views now {num(c.viewsNow)} {c.meetsMilestone ? `≥ ${milestone}` : `< ${milestone}`}</Check>
-      <Check ok={!c.earlierEligibleVideos.length}>{c.earlierEligibleVideos.length ? `Earlier video also eligible: ${c.earlierEligibleVideos.join(', ')}` : 'First eligible video on platform'}</Check>
+      <Check ok={c.capLeft == null || c.capLeft > 0}>{c.capLeft == null ? 'No monthly cap' : `Monthly cap: ₹${Math.max(0, c.capLeft).toLocaleString('en-IN')} left`}</Check>
     </div>
   )
 }

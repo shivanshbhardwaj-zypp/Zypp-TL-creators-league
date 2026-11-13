@@ -65,6 +65,7 @@ export interface Settings {
   platforms: Record<Platform, boolean>
   cities: string[]
   termsVersion: string
+  monthlyCap: number | null // max reward per participant per calendar month (T&C 5); null = no cap
 }
 
 export interface DB {
