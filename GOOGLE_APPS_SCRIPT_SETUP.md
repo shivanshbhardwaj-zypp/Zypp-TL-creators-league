@@ -99,7 +99,6 @@ npm run build      # static site in dist/ — host it anywhere (Netlify, Firebas
 - The host must send unknown paths (`/login`, `/me`, `/admin/…`) to `index.html`. On Netlify, add a `_redirects` file containing `/* /index.html 200`. Firebase and Vercel have the same "rewrite to index.html" setting.
 - The web app URL is public by design. It is not a secret, and nothing else goes in `.env`.
 
-To preview the UI without Google, run `npm run dev:mock`. It runs the same script logic over built-in demo data and never touches the sheet. Demo logins: `admin / admin123` and `ZYP1001 / aarav.1@example.com`.
 
 ## 7. Permissions and access control
 

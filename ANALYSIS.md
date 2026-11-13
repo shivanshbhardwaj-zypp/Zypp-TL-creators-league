@@ -4,7 +4,6 @@
 
 ```
 npm install
-npm run dev:mock   # http://localhost:5180 — UI over built-in demo data, no Google needed
 npm run dev        # http://localhost:5180 — against the real sheet (needs VITE_GAS_URL in .env)
 npm test           # builds apps-script/Code.js, then runs every test (logic, handler, bundled script)
 npm run build      # static site in dist/
@@ -13,7 +12,6 @@ npm run build:gas  # regenerate apps-script/Code.js to paste into Apps Script
 
 Deployment and sheet setup: **GOOGLE_APPS_SCRIPT_SETUP.md**.
 
-Mock-mode logins: **admin / admin123** · any TL, e.g. **ZYP1001 / aarav.1@example.com**. Real logins:
 - **Admin:** username plus `ADMIN_PASSWORD` from Script Properties.
 - **TL:** Employee ID plus registered email.
 
@@ -37,14 +35,14 @@ apps-script/
   build.mjs      esbuild → Code.js (one file to paste), exposes doPost/setup/... as globals
   Code.js        GENERATED — the complete Apps Script source
   appsscript.json  manifest (Asia/Kolkata, V8, web app access, scopes)
-  mock-env.ts    in-memory sheets for tests and `npm run dev:mock`
+  test-env.ts    in-memory sheets for the tests only
   api.test.ts    handler end to end over in-memory sheet tables
   bundle.test.ts the built Code.js against a fake SpreadsheetApp (setup, header reads, admin columns kept, Date cells)
 server/          (name kept; shared code, not a server)
   logic.ts       ALL calculations: filters, totals, ranking, rewards, weekly series, TL dashboard
   types.ts       data model mirroring the sheets
   apify.ts       live view counts via Apify (synchronous, for UrlFetchApp)
-  seed.ts        deterministic test fixture
+  test-fixture.ts  sample records for the automated tests only (never loaded by the site)
 src/
   lib.ts       api() → Apps Script, useApi (+ refresh events, last-updated), formatters
   landing.tsx  public campaign page: banner · description | form · T&C (wireframe)

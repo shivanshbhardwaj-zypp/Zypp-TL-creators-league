@@ -1,10 +1,10 @@
 // End-to-end tests of the Apps Script handler against in-memory sheet tables (same row mapping the real sheets use).
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { seed } from '../server/seed'
+import { seed } from '../server/test-fixture'
 import { leaderboard, summary } from '../server/logic'
 import { handle } from './api'
-import { memEnv } from './mock-env'
+import { memEnv } from './test-env'
 import { fromTables, parseMilestones, toTables } from './schema'
 
 const FORM = { name: 'Test TL', employeeId: 'ZYP9001', email: 'test.tl@zypp.app', city: 'Bengaluru', platform: 'instagram', url: 'https://www.instagram.com/reel/NewReel01/', terms: true }

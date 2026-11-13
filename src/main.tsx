@@ -164,7 +164,6 @@ function App() {
 }
 
 const GAS_URL = import.meta.env.VITE_GAS_URL
-const DEMO = import.meta.env.MODE === 'mock'
 
 /** Shown instead of a broken page when a fresh copy isn't connected to the Google Sheet yet. */
 function NotConnected() {
@@ -178,7 +177,7 @@ function NotConnected() {
           <li>Set <code>VITE_GAS_URL</code> to the Apps Script web app link (Apps Script → Deploy → Manage deployments).</li>
           <li>Restart <code>npm run dev</code>.</li>
         </ol>
-        <p className="muted sm">Full steps: GOOGLE_APPS_SCRIPT_SETUP.md. To only preview the design with made-up data, run <code>npm run dev:mock</code>.</p>
+        <p className="muted sm">Full steps: GOOGLE_APPS_SCRIPT_SETUP.md.</p>
       </div>
     </div>
   )
@@ -186,7 +185,6 @@ function NotConnected() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {DEMO && <div className="demo-banner" role="status">DEMO DATA: made-up TLs, cities and views for previewing the design. Not connected to the real Google Sheet.</div>}
     <BrowserRouter>{GAS_URL ? <App /> : <NotConnected />}</BrowserRouter>
   </StrictMode>,
 )

@@ -1,6 +1,5 @@
-// In-memory stand-in for the Google Sheets environment: same handler, same row mapping, demo data from server/seed.ts.
-// Used by the tests and by `npm run dev:mock` (UI preview before the Apps Script is deployed). Never deployed.
-import { seed } from '../server/seed'
+// TEST-ONLY in-memory stand-in for the Google Sheets environment (same handler, same row mapping). Used by *.test.ts only.
+import { seed } from '../server/test-fixture'
 import type { AuditEntry, DB } from '../server/types'
 import { handle, type Env } from './api'
 import { fromTables, toTables } from './schema'

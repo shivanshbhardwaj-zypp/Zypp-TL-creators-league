@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { seed } from './seed'
+import { seed } from './test-fixture'
 import { fetchViews, videoId } from './apify'
 
 test('videoId extracts stable ids without the URL class', () => {

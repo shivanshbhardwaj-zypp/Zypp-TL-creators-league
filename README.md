@@ -22,10 +22,8 @@ npm run dev             # http://localhost:5180, live data from the Google Sheet
 
 Without `VITE_GAS_URL` the site shows a "not connected" setup screen instead of data.
 
-**Design preview only:** `npm run dev:mock` runs the same logic over **made-up demo data** (30 fake TLs, 3 cities, random views from `server/seed.ts`). A red "DEMO DATA" bar is shown the whole time. Never use it to judge real numbers.
-
 ```bash
-npm test           # builds apps-script/Code.js and runs all tests (they use the demo data)
+npm test           # builds apps-script/Code.js and runs all tests (test-only sample records, never shown by the site)
 npm run build      # static site in dist/
 ```
 

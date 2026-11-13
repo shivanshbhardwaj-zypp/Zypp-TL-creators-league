@@ -14,7 +14,6 @@ Legend: [x] implemented **and** tested · [ ] not done
 - [x] Rewards per video at highest milestone, not cumulative; pending reward upgrades in place (tests)
 - [x] LEADERBOARD sheet derived on every save; 10-minute recalc trigger + sheet menu for hand edits
 - [x] Manual refresh, 2-minute auto-refresh (visible tab), "Updated hh:mm", keep last data on refresh errors
-- [x] `npm run dev:mock` UI preview over the same handler (browser-checked: register → TL dashboard → admin approve → reward + rank)
 - [x] GOOGLE_APPS_SCRIPT_SETUP.md (12 steps + troubleshooting)
 - [ ] **Deploy to a real spreadsheet and run setup steps 9–12** (needs the owner's Google account)
 - [ ] First live Apify run with a real token: confirm actor field names and costs

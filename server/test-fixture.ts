@@ -1,4 +1,5 @@
-// Deterministic, internally consistent test fixture (tests only; real data lives in Google Sheets).
+// TEST-ONLY sample records for the automated tests (npm test). The website never loads this file;
+// all real data comes from the Google Sheet.
 import type { DB, Participant, Platform, Status, Submission } from './types'
 import { claimReward, counted, decideClaim } from './logic'
 

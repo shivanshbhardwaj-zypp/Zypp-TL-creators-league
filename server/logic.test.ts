@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { seed } from './seed'
+import { seed } from './test-fixture'
 import { claimCheck, claimReward, counted, decideClaim, joinSub, leaderboard, milestoneFor, participantViews, position, rewardsOf, summary, tlDashboard, toPublic, videoKey } from './logic'
 
 test('seed has 30 TLs, 3 cities, all statuses and both platforms', () => {

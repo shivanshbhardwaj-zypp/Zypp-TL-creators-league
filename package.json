@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5180",
-    "dev:mock": "vite --mode mock --port 5180",
     "build": "vite build",
     "build:gas": "node apps-script/build.mjs",
     "test": "node apps-script/build.mjs && node --import tsx --test server/logic.test.ts server/integrations.test.ts apps-script/api.test.ts apps-script/bundle.test.ts",
